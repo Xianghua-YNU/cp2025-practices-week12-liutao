@@ -10,7 +10,22 @@ error = np.array([9.34, 17.9, 41.5, 85.5, 51.5, 21.5, 10.8, 6.29, 4.14])  # mb
 def lagrange_interpolation(x, x_data, y_data):
     """
     实现拉格朗日多项式插值
-    
+    """
+    n = len(x_data)
+    result = np.zeros_like(x, dtype=float)
+    for k in range(len(x)):  # 对每个插值点单独计算
+        px = x[k]
+        total = 0.0
+        for i in range(n):
+            term = y_data[i]
+            for j in range(n):
+                if i != j:
+                    if x_data[i] == x_data[j]:
+                        continue  # 跳过相同点避免除以零
+                    term *= (px - x_data[j]) / (x_data[i] - x_data[j])
+            total += term
+        result[k] = total
+    return result
     参数:
         x: 插值点或数组
         x_data: 已知数据点的x坐标
@@ -32,7 +47,9 @@ def lagrange_interpolation(x, x_data, y_data):
 def cubic_spline_interpolation(x, x_data, y_data):
     """
     实现三次样条插值
-    
+    f = interp1d(x_data, y_data, kind='cubic', fill_value='extrapolate')
+    return f(x)
+
     参数:
         x: 插值点或数组
         x_data: 已知数据点的x坐标
@@ -54,7 +71,36 @@ def cubic_spline_interpolation(x, x_data, y_data):
 def find_peak(x, y):
     """
     寻找峰值位置和半高全宽(FWHM)
+    """
+    peak_idx = np.argmax(y)
+    peak_x = x[peak_idx]
+    half_max = y[peak_idx] / 2
     
+    # 左半高搜索：找到最后一个低于半高的点
+    left_mask = y[:peak_idx] <= half_max
+    if not np.any(left_mask):
+        x_left = x[0]
+    else:
+        left_start = np.where(left_mask)[0][-1]  # 最后一个满足条件的索引
+        # 截取从left_start到峰值的片段（确保升序）
+        y_left_segment = y[left_start:peak_idx+1]
+        x_left_segment = x[left_start:peak_idx+1]
+        # 反向插值（因为片段是降序）
+        x_left = np.interp(half_max, y_left_segment[::-1], x_left_segment[::-1])
+    
+    # 右半高搜索：找到第一个低于半高的点
+    right_mask = y[peak_idx:] <= half_max
+    if not np.any(right_mask):
+        x_right = x[-1]
+    else:
+        right_end = np.where(right_mask)[0][0] + peak_idx  # 第一个满足条件的索引
+        # 截取从峰值到right_end的片段
+        y_right_segment = y[peak_idx:right_end+1]
+        x_right_segment = x[peak_idx:right_end+1]
+        x_right = np.interp(half_max, y_right_segment, x_right_segment)
+    
+    fwhm = x_right - x_left
+    return peak_x, fwhm
     参数:
         x: x坐标数组
         y: y坐标数组
@@ -66,7 +112,7 @@ def find_peak(x, y):
         1. 使用np.argmax找到峰值位置
         2. 计算半高位置
         3. 使用np.argmin找到半高位置
-    """
+    
     # TODO: 在此实现共振峰分析 (大约5-8行代码)
     # [STUDENT_CODE_HERE]
     raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
