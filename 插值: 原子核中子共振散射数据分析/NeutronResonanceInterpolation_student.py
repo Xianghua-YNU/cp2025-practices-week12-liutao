@@ -10,19 +10,14 @@ error = np.array([9.34, 17.9, 41.5, 85.5, 51.5, 21.5, 10.8, 6.29, 4.14])  # mb
 def lagrange_interpolation(x, x_data, y_data):
     """拉格朗日多项式插值实现"""
     n = len(x_data)
-    result = np.zeros_like(x, dtype=float)
-    for k in range(len(x)):  # 对每个插值点单独计算
-        px = x[k]
-        total = 0.0
-        for i in range(n):
-            term = y_data[i]
-            for j in range(n):
-                if i != j:
-                    if x_data[i] == x_data[j]:
-                        continue  # 跳过相同点避免除以零
-                    term *= (px - x_data[j]) / (x_data[i] - x_data[j])
-            total += term
-        result[k] = total
+    result = 0.0
+    
+    for i in range(n):
+        term = y_data[i]
+        for j in range(n):
+            if j != i:
+                term *= (x - x_data[j]) / (x_data[i] - x_data[j])
+        result += term
     return result
 
 def cubic_spline_interpolation(x, x_data, y_data):
