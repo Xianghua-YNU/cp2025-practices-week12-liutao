@@ -26,47 +26,14 @@ def lagrange_interpolation(x, x_data, y_data):
             total += term
         result[k] = total
     return result
-    参数:
-        x: 插值点或数组
-        x_data: 已知数据点的x坐标
-        y_data: 已知数据点的y坐标
-        
-    返回:
-        插值结果
-        
-    提示:
-        1. 使用拉格朗日插值公式实现
-        2. 考虑使用双重循环结构
-        3. 注意处理分母为零的情况
-    """
-    # TODO: 在此实现拉格朗日插值算法 (大约10-15行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
-    return result
+    
 
 def cubic_spline_interpolation(x, x_data, y_data):
     """
     实现三次样条插值
+    """
     f = interp1d(x_data, y_data, kind='cubic', fill_value='extrapolate')
     return f(x)
-
-    参数:
-        x: 插值点或数组
-        x_data: 已知数据点的x坐标
-        y_data: 已知数据点的y坐标
-        
-    返回:
-        插值结果
-        
-    提示:
-        1. 使用scipy.interpolate.interp1d
-        2. 设置kind='cubic'
-        3. 考虑边界条件处理
-    """
-    # TODO: 在此实现三次样条插值 (大约2-3行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
-    return result
 
 def find_peak(x, y):
     """
@@ -101,23 +68,7 @@ def find_peak(x, y):
     
     fwhm = x_right - x_left
     return peak_x, fwhm
-    参数:
-        x: x坐标数组
-        y: y坐标数组
-        
-    返回:
-        tuple: (峰值位置, FWHM)
-        
-    提示:
-        1. 使用np.argmax找到峰值位置
-        2. 计算半高位置
-        3. 使用np.argmin找到半高位置
     
-    # TODO: 在此实现共振峰分析 (大约5-8行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
-    return peak_x, fwhm
-
 def plot_results():
     """
     绘制插值结果和原始数据对比图
@@ -127,38 +78,35 @@ def plot_results():
         2. 调用前面实现的插值函数
         3. 绘制原始数据点和插值曲线
     """
-    # 生成密集的插值点
     x_interp = np.linspace(0, 200, 500)
     
-    # 计算两种插值结果
+    # 计算插值结果
     lagrange_result = lagrange_interpolation(x_interp, energy, cross_section)
     spline_result = cubic_spline_interpolation(x_interp, energy, cross_section)
     
-    # 绘制图形
-    plt.figure(figsize=(12, 6))
-    
-    # 原始数据点
-    plt.errorbar(energy, cross_section, yerr=error, fmt='o', color='black', 
-                label='Original Data', capsize=5)
-    
-    # 插值曲线
-    plt.plot(x_interp, lagrange_result, '-', label='Lagrange Interpolation')
-    plt.plot(x_interp, spline_result, '--', label='Cubic Spline Interpolation')
-    
-    # 标记峰值
+    # 计算共振峰参数
     lagrange_peak, lagrange_fwhm = find_peak(x_interp, lagrange_result)
     spline_peak, spline_fwhm = find_peak(x_interp, spline_result)
     
+    # 绘图设置
+    plt.figure(figsize=(12, 6))
+    plt.errorbar(energy, cross_section, yerr=error, fmt='o', color='black',
+                label='Original Data', capsize=5, zorder=3)
+    plt.plot(x_interp, lagrange_result, '-', label=f'Lagrange (Peak: {lagrange_peak:.1f} MeV, FWHM: {lagrange_fwhm:.1f} MeV)')
+    plt.plot(x_interp, spline_result, '--', label=f'Cubic Spline (Peak: {spline_peak:.1f} MeV, FWHM: {spline_fwhm:.1f} MeV)')
+    
+    # 标注峰值线
     plt.axvline(lagrange_peak, color='blue', linestyle=':', alpha=0.5)
     plt.axvline(spline_peak, color='orange', linestyle=':', alpha=0.5)
     
     # 图表装饰
-    plt.xlabel('Energy (MeV)')
-    plt.ylabel('Cross Section (mb)')
-    plt.title('Neutron Resonance Scattering Cross Section Analysis')
-    plt.legend()
-    plt.grid(True)
-    
+    plt.xlabel('Energy (MeV)', fontsize=12)
+    plt.ylabel('Cross Section (mb)', fontsize=12)
+    plt.title('Neutron Resonance Scattering Cross Section Analysis', fontsize=14)
+    plt.legend(loc='upper right')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.xlim(0, 200)
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
