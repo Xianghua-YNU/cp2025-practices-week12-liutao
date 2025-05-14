@@ -12,9 +12,7 @@ def load_bacterial_data(file_path):
     返回:
         tuple: 包含时间和酶活性测量值的元组
     """
-    # TODO: 实现数据加载功能 (大约3行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
+    t, activity = np.loadtxt(file_path, delimiter=',', unpack=True)
     return t, activity
 
 def V_model(t, tau):
@@ -28,10 +26,7 @@ def V_model(t, tau):
     返回:
         float or numpy.ndarray: V(t)模型值
     """
-    # TODO: 根据V(t) = 1 - e^(-t/τ)实现模型函数 (1行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
-    return result
+    return 1 - np.exp(-t / tau)
 
 def W_model(t, A, tau):
     """
@@ -45,10 +40,7 @@ def W_model(t, A, tau):
     返回:
         float or numpy.ndarray: W(t)模型值
     """
-    # TODO: 根据W(t) = A(e^(-t/τ) - 1 + t/τ)实现模型函数 (1行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
-    return result
+    return A * (np.exp(-t / tau) - 1 + t / tau)
 
 def fit_model(t, data, model_func, p0):
     """
@@ -63,9 +55,7 @@ def fit_model(t, data, model_func, p0):
     返回:
         tuple: 拟合参数及其协方差矩阵
     """
-    # TODO: 使用scipy.optimize.curve_fit进行拟合 (1行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
+    popt, pcov = curve_fit(model_func, t, data, p0=p0)
     return popt, pcov
 
 def plot_results(t, data, model_func, popt, title):
@@ -79,24 +69,45 @@ def plot_results(t, data, model_func, popt, title):
         popt (numpy.ndarray): 拟合参数
         title (str): 图表标题
     """
-    # TODO: 实现绘图功能 (约10行代码)
-    # [STUDENT_CODE_HERE]
-    raise NotImplementedError("请在 {} 中实现此函数".format(__file__))
+    plt.figure()
+    plt.scatter(t, data, label='Experimental Data', color='red')
+    t_fit = np.linspace(min(t), max(t), 100)
+    y_fit = model_func(t_fit, *popt)
+    plt.plot(t_fit, y_fit, label='Fitted Curve', color='blue')
+    plt.xlabel('Time')
+    plt.ylabel('Activity')
+    plt.title(title)
+    plt.legend()
+    
+    # 标注参数
+    if len(popt) == 1:
+        text = f'τ = {popt[0]:.3f}'
+    else:
+        text = f'A = {popt[0]:.3f}\nτ = {popt[1]:.3f}'
+    plt.text(0.6 * max(t), 0.2 * max(data), text, bbox=dict(facecolor='white', alpha=0.5))
+    plt.show()
 
 if __name__ == "__main__":
-    # 加载数据
-    data_dir = "/Users/lixh/Library/CloudStorage/OneDrive-个人/Code/cp2025-InterpolateFit/细菌生长实验数据拟合" # 请替换为你的数据目录
+    # 加载数据（请替换数据目录）
+    data_dir = "/Users/111/细菌生长" 
     t_V, V_data = load_bacterial_data(f"{data_dir}/g149novickA.txt")
     t_W, W_data = load_bacterial_data(f"{data_dir}/g149novickB.txt")
     
     # 拟合V(t)模型
     popt_V, pcov_V = fit_model(t_V, V_data, V_model, p0=[1.0])
-    print(f"V(t)模型拟合参数: τ = {popt_V[0]:.3f}")
+    tau_V = popt_V[0]
+    tau_V_err = np.sqrt(pcov_V[0][0])
     
     # 拟合W(t)模型
     popt_W, pcov_W = fit_model(t_W, W_data, W_model, p0=[1.0, 1.0])
-    print(f"W(t)模型拟合参数: A = {popt_W[0]:.3f}, τ = {popt_W[1]:.3f}")
+    A_W = popt_W[0]
+    tau_W = popt_W[1]
+    A_W_err = np.sqrt(pcov_W[0][0])
+    tau_W_err = np.sqrt(pcov_W[1][1])
     
-    # 绘制结果
+    print(f"V(t)拟合结果: τ = {tau_V:.3f} ± {tau_V_err:.3f}")
+    print(f"W(t)拟合结果: A = {A_W:.3f} ± {A_W_err:.3f}, τ = {tau_W:.3f} ± {tau_W_err:.3f}")
+    
+    # 绘图
     plot_results(t_V, V_data, V_model, popt_V, 'V(t) Model Fit')
     plot_results(t_W, W_data, W_model, popt_W, 'W(t) Model Fit')
