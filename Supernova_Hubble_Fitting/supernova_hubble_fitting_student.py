@@ -17,7 +17,7 @@ def load_supernova_data(file_path):
             - mu_err (numpy.ndarray): 距离模数误差
     """
     # 使用numpy.loadtxt加载CSV文件
-    data = np.loadtxt(file_path, delimiter='\t', skiprows=6)
+    data = np.loadtxt(file_path, delimiter='\t', skiprows=6, encoding='utf-8')
 
     # 提取红移z、距离模数μ和误差σ_μ
     z = data[:, 0]       # 第一列：红移
